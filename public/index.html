@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRM - Prospecção de Concessionárias</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>🚗 CRM Concessionárias</h1>
+            <p class="subtitle">Sistema de Prospecção e Gestão de Leads</p>
+        </header>
+
+        <!-- Navegação -->
+        <nav class="tabs">
+            <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
+            <button class="tab-btn" data-tab="concessionarias">Concessionárias</button>
+            <button class="tab-btn" data-tab="nova">Nova Concessionária</button>
+        </nav>
+
+        <!-- Tab: Dashboard -->
+        <div id="dashboard" class="tab-content active">
+            <h2>📊 Dashboard</h2>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-total">0</div>
+                    <div class="stat-label">Total de Concessionárias</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-novo">0</div>
+                    <div class="stat-label">Novos Leads</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-contato">0</div>
+                    <div class="stat-label">Em Contato</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-proposta">0</div>
+                    <div class="stat-label">Propostas Enviadas</div>
+                </div>
+            </div>
+
+            <div class="dashboard-section">
+                <h3>📅 Próximos Contatos</h3>
+                <div id="proximos-contatos" class="proximos-contatos"></div>
+            </div>
+
+            <div class="dashboard-section">
+                <h3>📈 Interações Últimos 30 Dias</h3>
+                <div class="stat-highlight">
+                    <span id="stat-interacoes">0</span> interações registradas
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Lista de Concessionárias -->
+        <div id="concessionarias" class="tab-content">
+            <h2>📋 Concessionárias</h2>
+
+            <!-- Filtros -->
+            <div class="filters">
+                <input type="text" id="search" placeholder="Buscar por nome, cidade ou responsável..." class="search-input">
+
+                <select id="filter-status" class="filter-select">
+                    <option value="">Todos os Status</option>
+                    <option value="novo">Novo</option>
+                    <option value="em_contato">Em Contato</option>
+                    <option value="proposta_enviada">Proposta Enviada</option>
+                    <option value="negociacao">Negociação</option>
+                    <option value="fechado">Fechado</option>
+                    <option value="perdido">Perdido</option>
+                </select>
+
+                <button onclick="loadConcessionarias()" class="btn-secondary">Atualizar</button>
+            </div>
+
+            <!-- Tabela -->
+            <div class="table-container">
+                <table class="data-table" id="concessionarias-table">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Cidade/UF</th>
+                            <th>Responsável</th>
+                            <th>Telefone</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="concessionarias-tbody">
+                        <!-- Dados carregados dinamicamente -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Tab: Nova Concessionária -->
+        <div id="nova" class="tab-content">
+            <h2>➕ Nova Concessionária</h2>
+
+            <form id="form-concessionaria" class="form">
+                <input type="hidden" id="edit-id">
+
+                <div class="form-section">
+                    <h3>Informações Básicas</h3>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="nome">Nome da Concessionária *</label>
+                            <input type="text" id="nome" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="cnpj">CNPJ</label>
+                            <input type="text" id="cnpj" placeholder="00.000.000/0000-00">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="telefone">Telefone *</label>
+                            <input type="tel" id="telefone" required placeholder="(00) 00000-0000">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" placeholder="contato@exemplo.com.br">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Endereço</h3>
+
+                    <div class="form-group">
+                        <label for="endereco">Endereço Completo</label>
+                        <input type="text" id="endereco" placeholder="Rua, Número">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="cidade">Cidade *</label>
+                            <input type="text" id="cidade" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="estado">Estado</label>
+                            <select id="estado">
+                                <option value="">Selecione</option>
+                                <option value="AC">AC</option>
+                                <option value="AL">AL</option>
+                                <option value="AP">AP</option>
+                                <option value="AM">AM</option>
+                                <option value="BA">BA</option>
+                                <option value="CE">CE</option>
+                                <option value="DF">DF</option>
+                                <option value="ES">ES</option>
+                                <option value="GO">GO</option>
+                                <option value="MA">MA</option>
+                                <option value="MT">MT</option>
+                                <option value="MS">MS</option>
+                                <option value="MG">MG</option>
+                                <option value="PA">PA</option>
+                                <option value="PB">PB</option>
+                                <option value="PR">PR</option>
+                                <option value="PE">PE</option>
+                                <option value="PI">PI</option>
+                                <option value="RJ">RJ</option>
+                                <option value="RN">RN</option>
+                                <option value="RS">RS</option>
+                                <option value="RO">RO</option>
+                                <option value="RR">RR</option>
+                                <option value="SC">SC</option>
+                                <option value="SP">SP</option>
+                                <option value="SE">SE</option>
+                                <option value="TO">TO</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Contato Responsável</h3>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="responsavel">Nome do Responsável</label>
+                            <input type="text" id="responsavel">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="cargo_responsavel">Cargo</label>
+                            <input type="text" id="cargo_responsavel" placeholder="Ex: Gerente Comercial">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Status e Observações</h3>
+
+                    <div class="form-group">
+                        <label for="status">Status</label>
+                        <select id="status">
+                            <option value="novo">Novo</option>
+                            <option value="em_contato">Em Contato</option>
+                            <option value="proposta_enviada">Proposta Enviada</option>
+                            <option value="negociacao">Negociação</option>
+                            <option value="fechado">Fechado</option>
+                            <option value="perdido">Perdido</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="observacoes">Observações</label>
+                        <textarea id="observacoes" rows="4" placeholder="Anotações sobre a concessionária..."></textarea>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Salvar Concessionária</button>
+                    <button type="button" onclick="resetForm()" class="btn-secondary">Limpar Formulário</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Detalhes -->
+    <div id="modal-detalhes" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2 id="modal-title">Detalhes da Concessionária</h2>
+
+            <div id="modal-body"></div>
+
+            <div class="modal-section">
+                <h3>📝 Histórico de Interações</h3>
+                <div id="interacoes-list"></div>
+
+                <h4>Adicionar Nova Interação</h4>
+                <form id="form-interacao" class="form-interacao">
+                    <div class="form-group">
+                        <label for="tipo-interacao">Tipo</label>
+                        <select id="tipo-interacao" required>
+                            <option value="Ligação">Ligação</option>
+                            <option value="Email">Email</option>
+                            <option value="WhatsApp">WhatsApp</option>
+                            <option value="Reunião">Reunião</option>
+                            <option value="Outro">Outro</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="descricao-interacao">Descrição</label>
+                        <textarea id="descricao-interacao" rows="3" required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="proximo-contato">Próximo Contato</label>
+                        <input type="date" id="proximo-contato">
+                    </div>
+
+                    <button type="submit" class="btn-primary">Adicionar Interação</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
