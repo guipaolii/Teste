@@ -278,7 +278,8 @@ app.get('/', (req, res) => {
 });
 
 // Iniciar servidor
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Servidor CRM rodando na porta ${PORT}`);
   console.log(`📊 Acesse: http://localhost:${PORT}`);
+  console.log(`🌐 Acesso externo: http://21.0.0.150:${PORT}`);
 });
