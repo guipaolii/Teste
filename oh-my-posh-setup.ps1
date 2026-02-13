@@ -71,8 +71,11 @@ Write-Host ""
 Write-Host "4. Recarregue o perfil:" -ForegroundColor Green
 Write-Host "   . `$PROFILE" -ForegroundColor White
 Write-Host ""
-Write-Host "5. Para ver todos os temas disponiveis:" -ForegroundColor Green
-Write-Host "   Get-PoshThemes" -ForegroundColor White
+Write-Host "5. Para listar todos os temas disponiveis:" -ForegroundColor Green
+Write-Host "   Get-ChildItem `$env:POSH_THEMES_PATH" -ForegroundColor White
+Write-Host ""
+Write-Host "6. Para visualizar cada tema no terminal:" -ForegroundColor Green
+Write-Host '   Get-ChildItem $env:POSH_THEMES_PATH/*.omp.json | ForEach-Object { Write-Host "`nTema: $($_.BaseName)" -ForegroundColor Cyan; oh-my-posh print primary --config $_.FullName }' -ForegroundColor White
 Write-Host ""
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host " Temas populares coloridos:" -ForegroundColor Cyan
