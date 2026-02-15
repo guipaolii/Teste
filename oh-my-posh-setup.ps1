@@ -41,7 +41,7 @@ if (!(Test-Path -Path $PROFILE)) {
 $profileContent = @'
 
 # Oh My Posh - Prompt colorido
-oh-my-posh init pwsh --config "$env:POSH_THEMES_PATH\jandedobbeleer.omp.json" | Invoke-Expression
+oh-my-posh init pwsh --config "$env:POSH_THEMES_PATH\atomic.omp.json" | Invoke-Expression
 
 '@
 
@@ -66,7 +66,7 @@ Write-Host "3. Adicione ao seu perfil PowerShell:" -ForegroundColor Green
 Write-Host "   notepad `$PROFILE" -ForegroundColor White
 Write-Host ""
 Write-Host "   Cole esta linha:" -ForegroundColor White
-Write-Host '   oh-my-posh init pwsh --config "$env:POSH_THEMES_PATH\jandedobbeleer.omp.json" | Invoke-Expression' -ForegroundColor White
+Write-Host '   oh-my-posh init pwsh --config "$env:POSH_THEMES_PATH\atomic.omp.json" | Invoke-Expression' -ForegroundColor White
 Write-Host ""
 Write-Host "4. Recarregue o perfil:" -ForegroundColor Green
 Write-Host "   . `$PROFILE" -ForegroundColor White
