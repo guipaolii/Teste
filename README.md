@@ -268,6 +268,46 @@ Para começar com banco vazio, delete o arquivo `crm.db` antes de iniciar.
 
 Este projeto está sob a licença MIT. Veja o arquivo LICENSE para mais detalhes.
 
+## 🌐 Uso com Tor no Ubuntu
+
+Este sistema pode ser acessado via rede Tor para maior privacidade. Se o Tor não estiver abrindo no Ubuntu, utilize o script de diagnóstico incluído:
+
+```bash
+chmod +x fix-tor-ubuntu.sh
+./fix-tor-ubuntu.sh
+```
+
+O script verifica e corrige automaticamente os problemas mais comuns:
+
+| Problema | Solução aplicada |
+|---|---|
+| Pacote `tor` não instalado | Instala via `apt-get` |
+| Serviço Tor parado | Habilita e inicia o serviço |
+| Dependências gráficas faltando | Instala `libgtk`, `libdbus`, etc. |
+| Permissões incorretas | Corrige com `chmod +x` |
+| Porta 9050 não escutando | Diagnóstico e orientação |
+
+### Soluções Rápidas
+
+```bash
+# Iniciar o serviço Tor
+sudo systemctl start tor
+
+# Verificar status
+sudo systemctl status tor
+
+# Ver logs de erro
+sudo journalctl -u tor -n 50 --no-pager
+
+# Reinstalar o Tor
+sudo apt-get remove --purge tor && sudo apt-get install tor
+
+# Executar o Tor Browser (não use root)
+cd ~/tor-browser && ./start-tor-browser.desktop --detach
+```
+
+> **Importante:** O Tor Browser não funciona quando executado como usuário `root`. Sempre use um usuário comum.
+
 ## 🆘 Suporte
 
 Para reportar bugs ou solicitar features:
