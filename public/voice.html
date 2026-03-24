@@ -343,7 +343,7 @@ function drawWave(dt) {
         freqBoost = 1 + smoothedFreq[fi] * 1.1;
       }
 
-      const y = CY + (sy + spread + ripple) * freqBoost;
+      const y = CY + (sy + ripple) * freqBoost + spread;
       i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
     }
     ctx.stroke();
