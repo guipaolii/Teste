@@ -1,0 +1,6 @@
+# Fallback audio stack for environments where PyAudio cannot be compiled
+# (e.g. Windows without Visual C++ Build Tools, Python 3.14+)
+# sounddevice uses CFFI and pre-compiled PortAudio binaries — no compiler needed
+sounddevice>=0.4.6
+soundfile>=0.12.1
+numpy>=1.26

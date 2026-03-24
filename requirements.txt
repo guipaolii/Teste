@@ -1,0 +1,4 @@
+# Audio dependencies
+# On Windows, use install_windows.bat or run: python install_deps.py
+# On Linux/macOS: pip install -r requirements.txt
+pyaudio>=0.2.14
