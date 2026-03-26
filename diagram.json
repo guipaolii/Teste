@@ -1,0 +1,102 @@
+{
+  "version": 1,
+  "author": "AICSS Project",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "type": "wokwi-esp32-devkit-v1",
+      "id": "esp",
+      "top": 200,
+      "left": 300,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-hc-sr04",
+      "id": "ultrassom",
+      "top": 20,
+      "left": -80,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-dht22",
+      "id": "dht",
+      "top": 20,
+      "left": 580,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-buzzer",
+      "id": "buzzer",
+      "top": 20,
+      "left": 760,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led1",
+      "top": 100,
+      "left": 260,
+      "attrs": { "color": "red" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led2",
+      "top": 100,
+      "left": 340,
+      "attrs": { "color": "red" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led3",
+      "top": 100,
+      "left": 420,
+      "attrs": { "color": "red" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r1",
+      "top": 160,
+      "left": 260,
+      "attrs": { "value": "220" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r2",
+      "top": 160,
+      "left": 340,
+      "attrs": { "value": "220" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r3",
+      "top": 160,
+      "left": 420,
+      "attrs": { "value": "220" }
+    }
+  ],
+  "connections": [
+    ["ultrassom:VCC", "esp:VIN", "red", []],
+    ["ultrassom:GND", "esp:GND.1", "black", []],
+    ["ultrassom:TRIG", "esp:D26", "green", []],
+    ["ultrassom:ECHO", "esp:D25", "green", []],
+
+    ["dht:VCC", "esp:3V3", "red", []],
+    ["dht:GND", "esp:GND.2", "black", []],
+    ["dht:SDA", "esp:D15", "yellow", []],
+
+    ["buzzer:1", "esp:D23", "orange", []],
+    ["buzzer:2", "esp:GND.1", "black", []],
+
+    ["led1:A", "r1:1", "orange", []],
+    ["r1:2", "esp:D21", "orange", []],
+    ["led1:K", "esp:GND.1", "black", []],
+
+    ["led2:A", "r2:1", "orange", []],
+    ["r2:2", "esp:D19", "orange", []],
+    ["led2:K", "esp:GND.1", "black", []],
+
+    ["led3:A", "r3:1", "orange", []],
+    ["r3:2", "esp:D18", "orange", []],
+    ["led3:K", "esp:GND.1", "black", []]
+  ]
+}
