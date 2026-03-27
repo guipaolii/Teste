@@ -13,6 +13,11 @@
 #define DHT_TYPE        DHT22
 #define RISC_LIMITE_CM  42
 
+// Configurações PWM do buzzer
+#define BUZZER_CANAL    0
+#define BUZZER_FREQ     1000
+#define BUZZER_RESOLUCAO 8
+
 DHT dht22(DHT_PIN, DHT_TYPE);
 
 // ─── Funções auxiliares ───────────────────────────────────────────────────────
@@ -29,11 +34,15 @@ float medirDistancia() {
 }
 
 void acionarAtuadores(bool risco) {
+  if (risco) {
+    ledcWriteTone(BUZZER_CANAL, BUZZER_FREQ);
+  } else {
+    ledcWriteTone(BUZZER_CANAL, 0);
+  }
   int estado = risco ? HIGH : LOW;
-  digitalWrite(BUZZER_PIN, estado);
-  digitalWrite(PIN_LED1,   estado);
-  digitalWrite(PIN_LED2,   estado);
-  digitalWrite(PIN_LED3,   estado);
+  digitalWrite(PIN_LED1, estado);
+  digitalWrite(PIN_LED2, estado);
+  digitalWrite(PIN_LED3, estado);
 }
 
 void imprimirCSV(float temp, float umid, float distancia, const char* estado) {
@@ -52,12 +61,14 @@ void setup() {
   Serial.begin(115200);
   dht22.begin();
 
-  pinMode(TRIG_PIN,   OUTPUT);
-  pinMode(ECHO_PIN,   INPUT);
-  pinMode(BUZZER_PIN, OUTPUT);
-  pinMode(PIN_LED1,   OUTPUT);
-  pinMode(PIN_LED2,   OUTPUT);
-  pinMode(PIN_LED3,   OUTPUT);
+  pinMode(TRIG_PIN, OUTPUT);
+  pinMode(ECHO_PIN, INPUT);
+  pinMode(PIN_LED1, OUTPUT);
+  pinMode(PIN_LED2, OUTPUT);
+  pinMode(PIN_LED3, OUTPUT);
+
+  ledcSetup(BUZZER_CANAL, BUZZER_FREQ, BUZZER_RESOLUCAO);
+  ledcAttachPin(BUZZER_PIN, BUZZER_CANAL);
 
   Serial.println("temp,umid,distancia,estado");
 }
