@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guia Zoo AI</title>
+</head>
+<body>
+<div class="voice-page">
+  <a class="back-btn" href="/">← Voltar</a>
+  <div class="assistant-name">
+    <span class="name-prefix">GUIA</span>
+    <span class="name-main">ZOO AI</span>
+  </div>
+
+  <div class="wave-scene">
+    <canvas id="waveCanvas" width="900" height="300"></canvas>
+    <div id="avatarStatus" class="status-badge idle">
+      <span class="status-dot"></span>
+      <span id="statusText">Online</span>
+    </div>
+  </div>
+
+  <div class="voice-selector">
+    <span class="selector-label">Voz</span>
+    <div class="voice-pills">
+      <button class="voice-pill active" data-voice="nova">Nova</button>
+      <button class="voice-pill" data-voice="alloy">Alloy</button>
+      <button class="voice-pill" data-voice="shimmer">Shimmer</button>
+      <button class="voice-pill" data-voice="onyx">Onyx</button>
+      <button class="voice-pill" data-voice="echo">Echo</button>
+    </div>
+  </div>
+
+  <div class="record-area">
+    <button id="recordBtn" class="record-btn">
+      <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor">
+        <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+        <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+      </svg>
+      <span id="recordLabel">Toque para falar</span>
+    </button>
+    <div id="statusMsg" class="status-msg">Pronto para ouvir você</div>
+  </div>
+
+  <div class="chat-area">
+    <div id="userBubble" class="chat-bubble user hidden"></div>
+    <div id="botBubble"  class="chat-bubble bot  hidden"></div>
+  </div>
+</div>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700&family=Baloo+2:wght@400;600;700&family=Luckiest+Guy&display=swap');
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #111; }
+.voice-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px 20px 40px;
+  font-family: 'Nunito', sans-serif;
+}
+.back-btn {
+  align-self: flex-start;
+  color: #ff9800;
+  text-decoration: none;
+  font-family: 'Fredoka One', sans-serif;
+  font-size: 0.9em;
+  letter-spacing: 0.5px;
+  padding: 8px 0;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+  margin-bottom: 8px;
+}
+.back-btn:hover { opacity: 1; }
+.assistant-name {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.name-prefix {
+  font-family: 'Luckiest Guy', sans-serif;
+  font-size: 1.0em;
+  color: #ff9800;
+  letter-spacing: 5px;
+  opacity: 0.7;
+  text-transform: uppercase;
+}
+.name-main {
+  font-family: 'Luckiest Guy', sans-serif;
+  font-size: 2.8em;
+  color: #fff;
+  letter-spacing: 6px;
+}
+.wave-scene {
+  position: relative;
+  width: 100%;
+  max-width: 900px;
+  margin-bottom: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+#waveCanvas { width: 100%; height: auto; display: block; }
+.status-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 18px;
+  border-radius: 20px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.85em;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  transition: all 0.3s;
+  margin-top: 4px;
+}
+.status-dot { width: 8px; height: 8px; border-radius: 50%; }
+.status-badge.idle   { background: rgba(255,152,0,0.08); border: 1px solid rgba(255,152,0,0.3); color: #ff9800; }
+.status-badge.idle   .status-dot { background: #ff9800; box-shadow: 0 0 6px #ff9800; animation: blink-dot 2s ease infinite; }
+.status-badge.listen { background: rgba(255,80,80,0.1);  border: 1px solid rgba(255,80,80,0.4);  color: #ff6060; }
+.status-badge.listen .status-dot { background: #ff6060; animation: blink-dot 0.6s ease infinite; }
+.status-badge.think  { background: rgba(80,160,255,0.1); border: 1px solid rgba(80,160,255,0.4); color: #60aaff; }
+.status-badge.think  .status-dot { background: #60aaff; animation: blink-dot 0.3s ease infinite; }
+.status-badge.speak  { background: rgba(255,152,0,0.12); border: 1px solid rgba(255,152,0,0.5); color: #ff9800; }
+.status-badge.speak  .status-dot { background: #ff9800; box-shadow: 0 0 10px #ff9800; animation: blink-dot 0.4s ease infinite; }
+@keyframes blink-dot { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+.voice-selector {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 22px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.selector-label {
+  font-family: 'Courier New', monospace;
+  font-size: 0.88em;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #ff9800;
+  opacity: 0.6;
+  text-transform: uppercase;
+}
+.voice-pills { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.voice-pill {
+  padding: 7px 18px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: transparent;
+  color: rgba(255,255,255,0.5);
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.82em;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.voice-pill:hover  { border-color: rgba(255,152,0,0.4); color: rgba(255,152,0,0.7); }
+.voice-pill.active { border-color: #ff9800; color: #ff9800; background: rgba(255,152,0,0.08); box-shadow: 0 0 10px rgba(255,152,0,0.15); }
+.record-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+.record-btn {
+  width: 120px; height: 120px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,152,0,0.4);
+  background: rgba(255,152,0,0.06);
+  color: rgba(255,255,255,0.8);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.85em;
+  letter-spacing: 0.5px;
+  transition: all 0.25s;
+  position: relative;
+}
+.record-btn::before {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,152,0,0.15);
+}
+.record-btn:hover { border-color: #ff9800; background: rgba(255,152,0,0.12); color: #fff; box-shadow: 0 0 24px rgba(255,152,0,0.2); }
+.record-btn.recording { border-color: #ff4444; background: rgba(255,68,68,0.1); color: #ff8888; box-shadow: 0 0 30px rgba(255,68,68,0.25); animation: recordPulse 1.2s ease infinite; }
+@keyframes recordPulse { 0%,100% { box-shadow: 0 0 20px rgba(255,68,68,0.2); } 50% { box-shadow: 0 0 40px rgba(255,68,68,0.5); } }
+.status-msg { font-family: 'Nunito', sans-serif; font-size: 0.85em; color: rgba(255,255,255,0.4); letter-spacing: 0.5px; min-height: 20px; text-align: center; }
+.chat-area { width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 10px; }
+.chat-bubble { padding: 12px 16px; border-radius: 14px; font-size: 0.9em; line-height: 1.6; max-width: 90%; }
+.chat-bubble.hidden { display: none; }
+.chat-bubble.user { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.7); align-self: flex-end; border-bottom-right-radius: 4px; }
+.chat-bubble.bot  { background: rgba(255,152,0,0.05); border: 1px solid rgba(255,152,0,0.2); color: rgba(255,255,255,0.9); align-self: flex-start; border-bottom-left-radius: 4px; }
+</style>
+
+<script>
+/* ════════════════════════════════════════════════════
+   Canvas Wave Engine
+   Boas práticas aplicadas:
+     · Delta-time → animação independente de frame rate
+     · Arrays pré-alocados → sem GC no loop de render
+     · EMA no FFT → reatividade suave, sem jitter
+     · Mapeamento logarítmico de frequência → energia da
+       voz distribuída por todo o canvas (não só à esquerda)
+     · freqBoost como multiplicador de amplitude → modula
+       a forma da onda, sem deslocar o eixo vertical
+     · Constantes nomeadas → sem magic numbers
+     · lineCap/lineJoin definidos uma vez fora do loop
+═══════════════════════════════════════════════════ */
+const canvas = document.getElementById('waveCanvas');
+const ctx    = canvas.getContext('2d');
+const W      = canvas.width;
+const H      = canvas.height;
+const CY     = H / 2;
+
+// Estado compartilhado — alterado por setAvatarState() / connectAudioAnalyser()
+let analyser = null;
+let waveMode = 'idle';
+
+// ── Configuração por estado ───────────────────────
+const STATES = {
+  idle:   { amp: 30,  speed: 0.10, spread: 40,  lineCount: 90,  alpha: 0.08, lineWidth: 0.7, color1: '#ff9800', color2: '#cc5500' },
+  listen: { amp: 65,  speed: 0.30, spread: 55,  lineCount: 110, alpha: 0.11, lineWidth: 0.9, color1: '#ff5722', color2: '#aa2200' },
+  speak:  { amp: 100, speed: 0.20, spread: 70,  lineCount: 130, alpha: 0.14, lineWidth: 1.0, color1: '#ff9800', color2: '#cc5500' },
+};
+
+// ── Constantes ────────────────────────────────────
+const LERP_SPEED  = 2.0;  // velocidade de transição de estado  (1/s, exponential)
+const FREQ_SMOOTH = 0.18; // alpha do EMA no FFT  (↓ = mais suave, ↑ = mais reativo)
+const FREQ_RANGE  = 0.35; // fração dos bins usados — cobre ~0–8 kHz (voz humana)
+const SLICES      = 400;  // segmentos de caminho por linha
+const MAX_DT      = 0.05; // cap de delta-time (evita salto ao trocar de aba)
+const EDGE_FADE   = 0.05; // largura relativa do fade nas bordas
+
+// ── Estado de animação ────────────────────────────
+let phase         = 0;
+let lastTimestamp = 0;
+let currentAmp    = STATES.idle.amp;
+let currentSpread = STATES.idle.spread;
+
+// Arrays pré-alocados: evitam new Uint8Array a cada frame
+let rawFreq      = null; // Uint8Array  — dados brutos do FFT
+let smoothedFreq = null; // Float32Array — EMA suavizado, valores 0..1
+
+// ── Helpers ───────────────────────────────────────
+const lerp = (a, b, t) => a + (b - a) * t;
+
+// Espinha: soma de harmônicos para movimento orgânico
+function spine(nx, ph) {
+  return Math.sin(nx * Math.PI * 2.0 + ph)        * 1.00
+       + Math.sin(nx * Math.PI * 3.5 - ph * 0.62) * 0.38
+       + Math.sin(nx * Math.PI * 1.1 - ph * 0.25) * 0.30
+       + Math.sin(nx * Math.PI * 5.2 + ph * 0.38) * 0.14;
+}
+
+// Mapeamento logarítmico: nx [0,1] → índice de bin FFT
+// Comprime altas frequências e expande baixas, onde a voz tem energia.
+// Sem isso, a metade direita do canvas mapearia bins sem conteúdo de voz.
+function logFreqIndex(nx, binCount) {
+  const logNx = Math.log1p(nx * 9) / Math.LN10;              // escala log 0..1
+  return Math.min(Math.floor(logNx * binCount * FREQ_RANGE), binCount - 1);
+}
+
+// Lê FFT → aplica EMA in-place em smoothedFreq → retorna true se ok
+function readFrequencyData() {
+  if (!analyser) return false;
+
+  const bins = analyser.frequencyBinCount;
+
+  // Aloca apenas uma vez (ou ao reconectar um analyser com tamanho diferente)
+  if (!rawFreq || rawFreq.length !== bins) {
+    rawFreq      = new Uint8Array(bins);
+    smoothedFreq = new Float32Array(bins);
+  }
+
+  analyser.getByteFrequencyData(rawFreq);
+
+  for (let i = 0; i < bins; i++) {
+    smoothedFreq[i] = lerp(smoothedFreq[i], rawFreq[i] / 255, FREQ_SMOOTH);
+  }
+  return true;
+}
+
+// ── Draw ──────────────────────────────────────────
+function drawWave(dt) {
+  ctx.clearRect(0, 0, W, H);
+
+  const st = STATES[waveMode];
+
+  // Lerp exponencial independente de frame rate:
+  // lf = 1 - e^(-k·dt) garante a mesma velocidade de convergência a qualquer fps
+  const lf = 1 - Math.exp(-LERP_SPEED * dt);
+  currentAmp    = lerp(currentAmp,    st.amp,    lf);
+  currentSpread = lerp(currentSpread, st.spread, lf);
+  phase        += st.speed * dt; // fase proporcional ao tempo real
+
+  const hasAudio = waveMode === 'speak' && readFrequencyData();
+  const N        = st.lineCount;
+
+  // lineCap e lineJoin não mudam entre linhas — definidos uma vez fora do loop
+  ctx.lineCap  = 'round';
+  ctx.lineJoin = 'round';
+
+  for (let li = 0; li < N; li++) {
+    const t       = li / (N - 1);
+    const u       = (t - 0.5) * 2;              // -1..1
+    const centerW = (1 - Math.abs(u)) ** 2;     // peso de campanula
+    const linePh  = phase + li * 0.4142;
+
+    ctx.beginPath();
+    ctx.strokeStyle = t < 0.5 ? st.color1 : st.color2;
+    ctx.globalAlpha = lerp(0.006, st.alpha,     centerW);
+    ctx.lineWidth   = lerp(0.2,   st.lineWidth, centerW);
+
+    for (let i = 0; i <= SLICES; i++) {
+      const nx = i / SLICES;
+      const x  = nx * W;
+
+      // Envelope de borda: fade-out suave nos EDGE_FADE% das extremidades
+      const edge = Math.min(1, nx / EDGE_FADE) * Math.min(1, (1 - nx) / EDGE_FADE);
+
+      const sy     = spine(nx, linePh) * currentAmp * edge;
+      const twist  = Math.sin(nx * Math.PI * 3.5 + linePh * 0.7) * 0.65 + 0.65;
+      const spread = u * currentSpread * twist * edge;
+      const ripple = Math.sin(nx * Math.PI * 8 + linePh * 1.6) * currentAmp * 0.06 * edge;
+
+      // Reatividade ao áudio: multiplica a amplitude da onda (não desloca o eixo).
+      // freqBoost > 1 faz a onda "respirar" com o som de forma simétrica.
+      // O mapeamento logarítmico garante que a energia da voz alcance
+      // toda a extensão do canvas, não só a metade esquerda.
+      let freqBoost = 1;
+      if (hasAudio) {
+        const fi = logFreqIndex(nx, smoothedFreq.length);
+        freqBoost = 1 + smoothedFreq[fi] * 1.1;
+      }
+
+      const y = CY + (sy + ripple) * freqBoost + spread;
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
+}
+
+// ── Render loop ───────────────────────────────────
+function renderLoop(timestamp) {
+  // lastTimestamp=0 no primeiro frame → dt=0 (sem salto inicial)
+  const dt  = lastTimestamp ? Math.min((timestamp - lastTimestamp) / 1000, MAX_DT) : 0;
+  lastTimestamp = timestamp;
+  drawWave(dt);
+  requestAnimationFrame(renderLoop);
+}
+
+requestAnimationFrame(renderLoop);
+
+/* ════════════════════════════════════════════════════
+   AudioContext
+═══════════════════════════════════════════════════ */
+let audioCtx = null;
+
+function connectAudioAnalyser(audioEl) {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const src = audioCtx.createMediaElementSource(audioEl);
+  analyser  = audioCtx.createAnalyser();
+  analyser.fftSize = 256;
+  src.connect(analyser);
+  analyser.connect(audioCtx.destination);
+}
+
+/* ════════════════════════════════════════════════════
+   UI
+═══════════════════════════════════════════════════ */
+const recordBtn   = document.getElementById('recordBtn');
+const recordLabel = document.getElementById('recordLabel');
+const statusMsg   = document.getElementById('statusMsg');
+const userBubble  = document.getElementById('userBubble');
+const botBubble   = document.getElementById('botBubble');
+const avatarStatus = document.getElementById('avatarStatus');
+const statusText  = document.getElementById('statusText');
+
+let selectedVoice = 'nova';
+let isRecording   = false;
+let mediaRecorder, audioChunks = [];
+
+document.querySelectorAll('.voice-pill').forEach(pill => {
+  pill.onclick = () => {
+    document.querySelectorAll('.voice-pill').forEach(p => p.classList.remove('active'));
+    pill.classList.add('active');
+    selectedVoice = pill.dataset.voice;
+  };
+});
+
+function setAvatarState(state, label) {
+  avatarStatus.className = 'status-badge ' + state;
+  statusText.textContent = label;
+  waveMode = state === 'listen' ? 'listen'
+           : state === 'speak'  ? 'speak'
+           : 'idle';
+}
+
+recordBtn.onclick = async () => {
+  if (isRecording) { mediaRecorder.stop(); return; }
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    mediaRecorder = new MediaRecorder(stream);
+    audioChunks   = [];
+    isRecording   = true;
+    recordBtn.classList.add('recording');
+    recordLabel.textContent = 'Toque para parar';
+    statusMsg.textContent   = 'Gravando...';
+    setAvatarState('listen', 'Ouvindo');
+
+    mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+    mediaRecorder.onstop = async () => {
+      isRecording = false;
+      recordBtn.classList.remove('recording');
+      recordLabel.textContent = 'Toque para falar';
+      stream.getTracks().forEach(t => t.stop());
+      statusMsg.textContent = 'Processando...';
+      setAvatarState('think', 'Pensando');
+
+      const blob = new Blob(audioChunks, { type: 'audio/wav' });
+      const form = new FormData();
+      form.append('audio', blob, 'audio.wav');
+      form.append('voice', selectedVoice);
+
+      try {
+        const res  = await fetch('/api/voice', { method: 'POST', body: form });
+        const data = await res.json();
+
+        if (data.error) {
+          statusMsg.textContent = '❌ ' + data.error;
+          setAvatarState('idle', 'Online');
+          return;
+        }
+
+        userBubble.textContent = data.transcription;
+        userBubble.classList.remove('hidden');
+        botBubble.textContent  = data.response;
+        botBubble.classList.remove('hidden');
+
+        const audio = new Audio('data:audio/mp3;base64,' + data.tts_base64);
+        audio.crossOrigin = 'anonymous';
+        connectAudioAnalyser(audio);
+        audio.onplay  = () => { setAvatarState('speak', 'Falando'); statusMsg.textContent = ''; };
+        audio.onended = () => { analyser = null; setAvatarState('idle', 'Online'); statusMsg.textContent = 'Pronto para ouvir você'; };
+        audio.onerror = () => { analyser = null; setAvatarState('idle', 'Online'); statusMsg.textContent = 'Pronto para ouvir você'; };
+
+        if (audioCtx?.state === 'suspended') await audioCtx.resume();
+        audio.play();
+      } catch (err) {
+        statusMsg.textContent = '❌ Erro de conexão';
+        setAvatarState('idle', 'Online');
+        console.error(err);
+      }
+    };
+
+    mediaRecorder.start();
+  } catch (err) {
+    statusMsg.textContent = '❌ Microfone não autorizado';
+    console.error(err);
+  }
+};
+</script>
+</body>
+</html>
