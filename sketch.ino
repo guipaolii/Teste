@@ -1,33 +1,21 @@
 #include <DHT.h>
 
 // Pinos
-#define TRIG_PIN   26
-#define ECHO_PIN   25
-#define DHT_PIN    15
-#define BUZZER_PIN 23
-#define LED1_PIN   21
-#define LED2_PIN   19
-#define LED3_PIN   18
+#define TRIG_PIN    25
+#define ECHO_PIN    26
+#define DHT_PIN     23
+#define BUZZER_PIN  19
+#define PIN_LED1    18
+#define PIN_LED2    5
+#define PIN_LED3    17
 
-#define DHT_TYPE   DHT22
-#define DISTANCIA_LIMITE 30  // cm
+// Configurações do sensor DHT
+#define DHT_TYPE        DHT22
+#define RISC_LIMITE_CM  42
 
-DHT dht(DHT_PIN, DHT_TYPE);
+DHT dht22(DHT_PIN, DHT_TYPE);
 
-void setup() {
-  Serial.begin(115200);
-  dht.begin();
-
-  pinMode(TRIG_PIN, OUTPUT);
-  pinMode(ECHO_PIN, INPUT);
-  pinMode(BUZZER_PIN, OUTPUT);
-  pinMode(LED1_PIN, OUTPUT);
-  pinMode(LED2_PIN, OUTPUT);
-  pinMode(LED3_PIN, OUTPUT);
-
-  // Cabeçalho CSV
-  Serial.println("temp,umidade,distancia,estado");
-}
+// ─── Funções auxiliares ───────────────────────────────────────────────────────
 
 float medirDistancia() {
   digitalWrite(TRIG_PIN, LOW);
@@ -37,40 +25,60 @@ float medirDistancia() {
   digitalWrite(TRIG_PIN, LOW);
 
   long duracao = pulseIn(ECHO_PIN, HIGH);
-  float distancia = duracao * 0.034 / 2.0;
-  return distancia;
+  return duracao * 0.034 / 2.0;
 }
 
 void acionarAtuadores(bool risco) {
-  digitalWrite(BUZZER_PIN, risco ? HIGH : LOW);
-  digitalWrite(LED1_PIN,   risco ? HIGH : LOW);
-  digitalWrite(LED2_PIN,   risco ? HIGH : LOW);
-  digitalWrite(LED3_PIN,   risco ? HIGH : LOW);
+  int estado = risco ? HIGH : LOW;
+  digitalWrite(BUZZER_PIN, estado);
+  digitalWrite(PIN_LED1,   estado);
+  digitalWrite(PIN_LED2,   estado);
+  digitalWrite(PIN_LED3,   estado);
 }
 
-void loop() {
-  float temperatura = dht.readTemperature();
-  float umidade     = dht.readHumidity();
-  float distancia   = medirDistancia();
+void imprimirCSV(float temp, float umid, float distancia, const char* estado) {
+  Serial.print(temp, 1);
+  Serial.print(",");
+  Serial.print(umid, 1);
+  Serial.print(",");
+  Serial.print(distancia, 1);
+  Serial.print(",");
+  Serial.println(estado);
+}
 
-  if (isnan(temperatura) || isnan(umidade)) {
-    Serial.println("Erro na leitura do DHT22");
+// ─── Setup ───────────────────────────────────────────────────────────────────
+
+void setup() {
+  Serial.begin(115200);
+  dht22.begin();
+
+  pinMode(TRIG_PIN,   OUTPUT);
+  pinMode(ECHO_PIN,   INPUT);
+  pinMode(BUZZER_PIN, OUTPUT);
+  pinMode(PIN_LED1,   OUTPUT);
+  pinMode(PIN_LED2,   OUTPUT);
+  pinMode(PIN_LED3,   OUTPUT);
+
+  Serial.println("temp,umid,distancia,estado");
+}
+
+// ─── Loop ────────────────────────────────────────────────────────────────────
+
+void loop() {
+  float temp = dht22.readTemperature();
+  float umid = dht22.readHumidity();
+
+  if (isnan(temp) || isnan(umid)) {
+    Serial.println("Erro: falha na leitura do DHT22");
     delay(2000);
     return;
   }
 
-  bool risco = (distancia < DISTANCIA_LIMITE);
-  String estado = risco ? "RISCO" : "SEGURO";
+  float distancia = medirDistancia();
+  bool  risco     = distancia < RISC_LIMITE_CM;
 
   acionarAtuadores(risco);
+  imprimirCSV(temp, umid, distancia, risco ? "RISCO" : "SEGURO");
 
-  Serial.print(temperatura, 1);
-  Serial.print(",");
-  Serial.print(umidade, 1);
-  Serial.print(",");
-  Serial.print((int)distancia);
-  Serial.print(",");
-  Serial.println(estado);
-
-  delay(1000);
+  delay(1500);
 }
